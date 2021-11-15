@@ -41,7 +41,7 @@ class UserRegisterRequest extends FormRequest
                  string|
                  max:12|
                  regex:/^\+?[78][-\(]?\d{3}\)?-?\d{3}-?\d{2}-?\d{2}$/|
-                 unique:Users,phone',
+                 unique:users,phone',
             'city' => 'string|max:25',
             'street' => 'string|max:25',
             'house' => 'string|max:25',
