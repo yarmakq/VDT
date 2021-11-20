@@ -12,8 +12,19 @@ class LoginController extends Controller
 {
     public function login(UserLoginRequest $request)
     {
-        if (! $token = auth()->attempt($request->validated())) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        $validated = $request->validated();
+
+        if (isset($validated)) {
+            if (! $token = auth()->attempt($request->validated())) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+        } else
+            {
+                if ($validated->any()) {
+                    foreach ($validated->all() as $error) {
+                        return response()->json(['errors' => ['error' => $error]]);
+                }
+            }
         }
 
         return $this->createNewToken($token);
