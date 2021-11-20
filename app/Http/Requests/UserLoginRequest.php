@@ -4,7 +4,9 @@
 namespace App\Http\Requests;
 
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class UserLoginRequest extends FormRequest
 {
@@ -26,13 +28,20 @@ class UserLoginRequest extends FormRequest
     public function rules()
     {
         return [
-            'email' => 'required|email',
-            'password' => [
-                'regex:/^[a-zA-Z0-9Ññ\s]+$/',
-                'required',
-                'min:8',
-                'max:32'
-            ],
+            'email' => 'bail|required|email',
+            'password' => 'required',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        $errors = $validator->errors();
+
+        $response = response()->json([
+            'message' => 'Invalid data send',
+            'details' => $errors->messages(),
+        ], 422);
+
+        throw new HttpResponseException($response);
     }
 }

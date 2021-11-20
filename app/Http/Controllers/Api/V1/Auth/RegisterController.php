@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Adress;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 
 class RegisterController extends Controller
@@ -18,7 +20,6 @@ class RegisterController extends Controller
     public function register(UserRegisterRequest $request)
     {
         $validated = $request->validated();
-
         $user = User::where('email', $validated['email'])->first();
 
         if (!isset($user)) {
@@ -26,7 +27,6 @@ class RegisterController extends Controller
 
             return response()->json(['data' => ['user' => UserResource::make($user)]]);
         }
-
 
         if ($validated->any()) {
             foreach ($validated->all() as $error) {
@@ -43,9 +43,19 @@ class RegisterController extends Controller
         $user->password = bcrypt($data['password']);
         $user->save();
 
+        $this->getRoleAndPermissions($user);
+
         $address = $this->addAddress($user, $data);
 
         return $user;
+    }
+
+    private function getRoleAndPermissions(User $user) {
+        $customer = Role::where('slug', 'customer')->first();
+        $shopping = Permission::where('slug','shopping')->first();
+
+        $user->roles()->attach($customer);
+        $user->permissions()->attach($shopping);
     }
 
     private function addAddress(User $user,array $data) :Adress
