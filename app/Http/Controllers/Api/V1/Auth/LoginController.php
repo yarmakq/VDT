@@ -6,10 +6,21 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserLoginRequest;
 use App\Models\Adress;
+use App\Repository\UserRepository;
 use Auth;
 
 class LoginController extends Controller
 {
+    /**
+     * @var UserRepository
+     */
+    private $userRepository;
+
+    public function __construct(UserRepository $userRepository)
+    {
+        $this->userRepository = $userRepository;
+    }
+
     public function login(UserLoginRequest $request)
     {
         $validated = $request->validated();
@@ -37,7 +48,8 @@ class LoginController extends Controller
             'expires_in' => auth()->factory()->getTTL() * 60,
             'info' => [
                 'user' => auth()->user(),
-                'address' => Adress::where('user_id', Auth::user()->id)->first()
+                'address' => Adress::where('user_id', Auth::user()->id)->first(),
+                'Role' => $this->userRepository->userRole(Auth::user()),
             ],
         ]);
     }
